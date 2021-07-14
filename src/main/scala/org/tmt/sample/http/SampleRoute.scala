@@ -9,16 +9,19 @@ import org.tmt.sample.core.models.UserInfo
 
 import scala.concurrent.ExecutionContext
 
-class SampleRoute(service1: SampleImpl, service2: JSampleImplWrapper, securityDirectives: SecurityDirectives) (implicit  ec: ExecutionContext) extends HttpCodecs {
+class SampleRoute(service1: SampleImpl, service2: JSampleImplWrapper, securityDirectives: SecurityDirectives)(implicit
+    ec: ExecutionContext
+) extends HttpCodecs {
 
-  val route: Route = post { path("sayHello") {
-    entity(as[UserInfo]) { userInfo =>
-      complete(service1.sayHello(userInfo))
-        }
+  val route: Route = post {
+    path("greeting") {
+      entity(as[UserInfo]) { userInfo =>
+        complete(service1.greeting(userInfo))
+      }
     } ~
-    path("securedSayHello") {
+    path("adminGreeting") {
       securityDirectives.sPost(RealmRolePolicy("Esw-user")) { token =>
-        entity(as[UserInfo]) { userInfo => complete(service1.securedSayHello(userInfo)) }
+        entity(as[UserInfo]) { userInfo => complete(service1.adminGreeting(userInfo)) }
       }
     }
   } ~

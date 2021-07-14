@@ -5,7 +5,7 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.mockito.Mockito;
 import org.scalatestplus.junit.JUnitSuite;
-import org.tmt.sample.core.models.SampleResponse;
+import org.tmt.sample.core.models.GreetResponse;
 
 import java.util.concurrent.ExecutionException;
 
@@ -17,7 +17,7 @@ public class JSampleImplTest extends JUnitSuite {
   public void shouldCallBye() throws ExecutionException, InterruptedException {
     JCswServices mock = Mockito.mock(JCswServices.class);
     JSampleImpl jSample = new JSampleImpl(mock);
-    SampleResponse sampleResponse = new SampleResponse("Bye!!!");
-    assertThat(jSample.sayBye().get(), CoreMatchers.is(sampleResponse));
+    GreetResponse greetResponse = new GreetResponse("Bye!!!");
+    assertThat(jSample.sayBye().get(), CoreMatchers.is(greetResponse));
   }
 }

@@ -17,7 +17,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.wordspec.AnyWordSpec
 import org.tmt.sample.TestHelper
 import org.tmt.sample.core.SampleImpl
-import org.tmt.sample.core.models.{UserInfo, SampleResponse}
+import org.tmt.sample.core.models.{UserInfo, GreetResponse}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -36,37 +36,37 @@ class SampleRouteTest extends AnyWordSpec with ScalatestRouteTest with AkkaHttpC
 
   "SampleRoute" must {
     "sayHello must delegate to service1.sayHello" in {
-      val response = SampleResponse(Random.nextString(10))
+      val response = GreetResponse(Random.nextString(10))
       val john     = UserInfo("John", "Smith")
-      when(service1.sayHello(john)).thenReturn(Future.successful(response))
+      when(service1.greeting(john)).thenReturn(Future.successful(response))
 
       Post("/sayHello", john) ~> route ~> check {
-        verify(service1).sayHello(UserInfo("John", "Smith"))
-        responseAs[SampleResponse] should ===(response)
+        verify(service1).greeting(UserInfo("John", "Smith"))
+        responseAs[GreetResponse] should ===(response)
       }
     }
 
     "sayBye must delegate to service2.sayBye" in {
-      val response = SampleResponse(Random.nextString(10))
+      val response = GreetResponse(Random.nextString(10))
       when(service2.sayBye()).thenReturn(Future.successful(response))
 
       Get("/sayBye") ~> route ~> check {
         verify(service2).sayBye()
-        responseAs[SampleResponse] should ===(response)
+        responseAs[GreetResponse] should ===(response)
       }
     }
 
     "securedSayHello must check for Esw-user role and delegate to service1.securedSayHello" in {
-      val response = SampleResponse(Random.nextString(10))
+      val response = GreetResponse(Random.nextString(10))
       val policy   = RealmRolePolicy("Esw-user")
       val john     = UserInfo("John", "Smith")
       when(securityDirectives.sPost(policy)).thenReturn(accessTokenDirective)
-      when(service1.securedSayHello(john)).thenReturn(Future.successful(Some(response)))
+      when(service1.adminGreeting(john)).thenReturn(Future.successful(Some(response)))
 
       Post("/securedSayHello", john) ~> route ~> check {
-        verify(service1).securedSayHello(UserInfo("John", "Smith"))
+        verify(service1).adminGreeting(UserInfo("John", "Smith"))
         verify(securityDirectives).sPost(policy)
-        responseAs[Option[SampleResponse]] should ===(Some(response))
+        responseAs[Option[GreetResponse]] should ===(Some(response))
       }
     }
   }

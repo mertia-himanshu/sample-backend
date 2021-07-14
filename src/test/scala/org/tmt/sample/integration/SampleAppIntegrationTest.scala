@@ -20,7 +20,7 @@ import org.tmt.embedded_keycloak.impl.StopHandle
 import org.tmt.embedded_keycloak.utils.BearerToken
 import org.tmt.embedded_keycloak.{EmbeddedKeycloak, KeycloakData, Settings}
 import org.tmt.sample.SampleWiring
-import org.tmt.sample.core.models.{UserInfo, SampleResponse}
+import org.tmt.sample.core.models.{UserInfo, GreetResponse}
 import org.tmt.sample.http.HttpCodecs
 
 import scala.concurrent.duration.DurationInt
@@ -66,7 +66,7 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
     }
 
     "should call sayHello and return sampleResponse as a result" in {
-      val token = getToken("admin", "password1")()
+      val token    = getToken("admin", "password1")()
       val userInfo = UserInfo("John", "Smith")
       val request = HttpRequest(
         HttpMethods.POST,
@@ -77,7 +77,9 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
 
       val response: HttpResponse = Http().singleRequest(request).futureValue
       response.status should ===(StatusCode.int2StatusCode(200))
-      Unmarshal(response).to[SampleResponse].futureValue should ===(SampleResponse(s"Hello user: ${userInfo.firstname} ${userInfo.lastname}!!!"))
+      Unmarshal(response).to[GreetResponse].futureValue should ===(
+        GreetResponse(s"Hello user: ${userInfo.firstname} ${userInfo.lastname}!!!")
+      )
     }
 
     "should call securedSayHello and return sampleResponse as a result" in {
@@ -93,8 +95,8 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
       val response: HttpResponse = Http().singleRequest(request).futureValue
 
       response.status should ===(StatusCode.int2StatusCode(200))
-      Unmarshal(response).to[Option[SampleResponse]].futureValue should ===(
-        Some(SampleResponse(s"Hello secured user: ${userInfo.firstname} ${userInfo.lastname}!!!"))
+      Unmarshal(response).to[Option[GreetResponse]].futureValue should ===(
+        Some(GreetResponse(s"Hello secured user: ${userInfo.firstname} ${userInfo.lastname}!!!"))
       )
     }
 
