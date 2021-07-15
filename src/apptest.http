@@ -1,5 +1,5 @@
-#### Request to test sayHello endpoint
-POST http://<host>:8084/sayHello
+#### Request to test greeting endpoint
+POST http://<host>:8084/greeting
 Content-Type: application/json
 
 {

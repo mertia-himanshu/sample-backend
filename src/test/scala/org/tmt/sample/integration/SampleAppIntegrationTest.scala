@@ -20,7 +20,7 @@ import org.tmt.embedded_keycloak.impl.StopHandle
 import org.tmt.embedded_keycloak.utils.BearerToken
 import org.tmt.embedded_keycloak.{EmbeddedKeycloak, KeycloakData, Settings}
 import org.tmt.sample.SampleWiring
-import org.tmt.sample.core.models.{UserInfo, GreetResponse}
+import org.tmt.sample.core.models.{AdminGreetResponse, GreetResponse, UserInfo}
 import org.tmt.sample.http.HttpCodecs
 
 import scala.concurrent.duration.DurationInt
@@ -65,12 +65,12 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
       resolvedLocation.get.connection should ===(appConnection)
     }
 
-    "should call sayHello and return sampleResponse as a result" in {
+    "should call greeting and return sampleResponse as a result" in {
       val token    = getToken("admin", "password1")()
       val userInfo = UserInfo("John", "Smith")
       val request = HttpRequest(
         HttpMethods.POST,
-        uri = appUri.withPath(Path / "sayHello"),
+        uri = appUri.withPath(Path / "greeting"),
         headers = token.map(x => Seq(Authorization(OAuth2BearerToken(x)))).getOrElse(Nil),
         entity = HttpEntity(ContentTypes.`application/json`, Json.encode(userInfo).toUtf8String.getBytes)
       )
@@ -82,12 +82,12 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
       )
     }
 
-    "should call securedSayHello and return sampleResponse as a result" in {
+    "should call adminGreeting and return sampleResponse as a result" in {
       val token    = getToken("admin", "password1")()
       val userInfo = UserInfo("John", "Smith")
       val request = HttpRequest(
         HttpMethods.POST,
-        uri = appUri.withPath(Path / "securedSayHello"),
+        uri = appUri.withPath(Path / "adminGreeting"),
         headers = token.map(x => Seq(Authorization(OAuth2BearerToken(x)))).getOrElse(Nil),
         entity = HttpEntity(ContentTypes.`application/json`, Json.encode(userInfo).toUtf8String.getBytes())
       )
@@ -95,17 +95,17 @@ class SampleAppIntegrationTest extends ScalaTestFrameworkTestKit with AnyWordSpe
       val response: HttpResponse = Http().singleRequest(request).futureValue
 
       response.status should ===(StatusCode.int2StatusCode(200))
-      Unmarshal(response).to[Option[GreetResponse]].futureValue should ===(
-        Some(GreetResponse(s"Hello secured user: ${userInfo.firstname} ${userInfo.lastname}!!!"))
+      Unmarshal(response).to[AdminGreetResponse].futureValue should ===(
+        AdminGreetResponse(s"Hello admin user: ${userInfo.firstname} ${userInfo.lastname}!!!")
       )
     }
 
-    "should call securedSayHello and return 403 as a result without required role" in {
+    "should call adminGreeting and return 403 as a result without required role" in {
       val token    = getToken("nonAdmin", "password2")()
       val userInfo = UserInfo("John", "Smith")
       val request = HttpRequest(
         HttpMethods.POST,
-        uri = appUri.withPath(Path / "securedSayHello"),
+        uri = appUri.withPath(Path / "adminGreeting"),
         headers = token.map(x => Seq(Authorization(OAuth2BearerToken(x)))).getOrElse(Nil),
         entity = HttpEntity(ContentTypes.`application/json`, Json.encode(userInfo).toUtf8String.getBytes())
       )

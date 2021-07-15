@@ -17,7 +17,7 @@ import org.scalatest.matchers.should.Matchers.convertToAnyShouldWrapper
 import org.scalatest.wordspec.AnyWordSpec
 import org.tmt.sample.TestHelper
 import org.tmt.sample.core.SampleImpl
-import org.tmt.sample.core.models.{UserInfo, GreetResponse}
+import org.tmt.sample.core.models.{AdminGreetResponse, GreetResponse, UserInfo}
 
 import scala.concurrent.Future
 import scala.util.Random
@@ -35,13 +35,13 @@ class SampleRouteTest extends AnyWordSpec with ScalatestRouteTest with AkkaHttpC
   override protected def beforeEach(): Unit = reset(service1, securityDirectives)
 
   "SampleRoute" must {
-    "sayHello must delegate to service1.sayHello" in {
+    "greeting must delegate to service1.greeting" in {
       val response = GreetResponse(Random.nextString(10))
       val john     = UserInfo("John", "Smith")
       when(service1.greeting(john)).thenReturn(Future.successful(response))
 
-      Post("/sayHello", john) ~> route ~> check {
-        verify(service1).greeting(UserInfo("John", "Smith"))
+      Post("/greeting", john) ~> route ~> check {
+        verify(service1).greeting(john)
         responseAs[GreetResponse] should ===(response)
       }
     }
@@ -56,17 +56,17 @@ class SampleRouteTest extends AnyWordSpec with ScalatestRouteTest with AkkaHttpC
       }
     }
 
-    "securedSayHello must check for Esw-user role and delegate to service1.securedSayHello" in {
-      val response = GreetResponse(Random.nextString(10))
+    "adminGreeting must check for Esw-user role and delegate to service1.adminGreeting" in {
+      val response = AdminGreetResponse(Random.nextString(10))
       val policy   = RealmRolePolicy("Esw-user")
       val john     = UserInfo("John", "Smith")
       when(securityDirectives.sPost(policy)).thenReturn(accessTokenDirective)
-      when(service1.adminGreeting(john)).thenReturn(Future.successful(Some(response)))
+      when(service1.adminGreeting(john)).thenReturn(Future.successful(response))
 
-      Post("/securedSayHello", john) ~> route ~> check {
+      Post("/adminGreeting", john) ~> route ~> check {
         verify(service1).adminGreeting(UserInfo("John", "Smith"))
         verify(securityDirectives).sPost(policy)
-        responseAs[Option[GreetResponse]] should ===(Some(response))
+        responseAs[AdminGreetResponse] should ===(response)
       }
     }
   }
